@@ -4877,7 +4877,17 @@ self: super: with self; {
   # LTS in extended support phase
   django_5 = callPackage ../development/python-modules/django/5.nix { };
 
-  django_6 = callPackage ../development/python-modules/django/6.nix { };
+  django_6 =
+    let
+      base = callPackage ../development/python-modules/django/6.nix { };
+    in
+    # Expose a GDAL/GEOS-enabled build as `django_6.withGdal` so GeoDjango
+    # users can pick it up directly instead of overriding `withGdal` by hand.
+    base.overrideAttrs (prev: {
+      passthru = prev.passthru // {
+        withGdal = base.override { withGdal = true; };
+      };
+    });
 
   djangocms-admin-style = callPackage ../development/python-modules/djangocms-admin-style { };
 
